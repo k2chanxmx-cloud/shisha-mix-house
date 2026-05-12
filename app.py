@@ -9,7 +9,6 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 
 
 APP_NAME = "🏠家シーシャ配合記録🏠"
-
 TABLE_NAME = "home_shisha_mixes"
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -19,7 +18,6 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 
 def get_conn():
-
     if not DATABASE_URL:
         raise RuntimeError("DATABASE_URL が設定されていません。")
 
@@ -27,7 +25,6 @@ def get_conn():
 
 
 def init_db():
-
     conn = get_conn()
     cur = conn.cursor()
 
@@ -45,17 +42,14 @@ def init_db():
     """)
 
     conn.commit()
-
     cur.close()
     conn.close()
 
 
 def build_gram_detail(flavors, grams):
-
     lines = []
 
     for flavor, gram in zip(flavors, grams):
-
         flavor = flavor.strip()
         gram = gram.strip()
 
@@ -74,7 +68,6 @@ def build_gram_detail(flavors, grams):
 
         try:
             gram_value = float(gram)
-
         except ValueError:
             continue
 
@@ -89,7 +82,6 @@ def build_gram_detail(flavors, grams):
 
 
 def parse_gram_detail(gram_detail):
-
     results = []
 
     if not gram_detail:
@@ -98,7 +90,6 @@ def parse_gram_detail(gram_detail):
     lines = gram_detail.splitlines()
 
     for line in lines:
-
         line = line.strip()
 
         if not line:
@@ -122,7 +113,6 @@ def parse_gram_detail(gram_detail):
         gram = float(match.group(2))
 
         if flavor:
-
             results.append({
                 "flavor": flavor,
                 "gram": int(gram) if gram.is_integer() else gram
@@ -131,21 +121,12 @@ def parse_gram_detail(gram_detail):
     return results
 
 
-def save_mix(
-    smoked_date,
-    gram_detail,
-    staff_name,
-    rating,
-    memo
-):
-
+def save_mix(smoked_date, gram_detail, staff_name, rating, memo):
     rating_value = None
 
     if rating:
-
         try:
             rating_value = int(rating)
-
         except ValueError:
             rating_value = None
 
@@ -174,27 +155,16 @@ def save_mix(
     ))
 
     conn.commit()
-
     cur.close()
     conn.close()
 
 
-def update_mix(
-    mix_id,
-    smoked_date,
-    gram_detail,
-    staff_name,
-    rating,
-    memo
-):
-
+def update_mix(mix_id, smoked_date, gram_detail, staff_name, rating, memo):
     rating_value = None
 
     if rating:
-
         try:
             rating_value = int(rating)
-
         except ValueError:
             rating_value = None
 
@@ -222,18 +192,13 @@ def update_mix(
     ))
 
     conn.commit()
-
     cur.close()
     conn.close()
 
 
 def get_all_mixes():
-
     conn = get_conn()
-
-    cur = conn.cursor(
-        cursor_factory=psycopg2.extras.RealDictCursor
-    )
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cur.execute(f"""
         SELECT
@@ -258,12 +223,8 @@ def get_all_mixes():
 
 
 def get_mix_by_id(mix_id):
-
     conn = get_conn()
-
-    cur = conn.cursor(
-        cursor_factory=psycopg2.extras.RealDictCursor
-    )
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cur.execute(f"""
         SELECT
@@ -289,7 +250,6 @@ def get_mix_by_id(mix_id):
 
 @app.route("/")
 def index():
-
     mixes = get_all_mixes()
 
     return render_template(
@@ -302,56 +262,25 @@ def index():
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
-
     today = date.today().isoformat()
 
     if request.method == "POST":
-
-        smoked_date = request.form.get(
-            "smoked_date",
-            ""
-        ).strip()
-
+        smoked_date = request.form.get("smoked_date", "").strip()
         flavors = request.form.getlist("flavor[]")
         grams = request.form.getlist("gram[]")
-
-        staff_name = request.form.get(
-            "staff_name",
-            ""
-        ).strip()
-
-        rating = request.form.get(
-            "rating",
-            ""
-        ).strip()
-
-        memo = request.form.get(
-            "memo",
-            ""
-        ).strip()
+        staff_name = request.form.get("staff_name", "").strip()
+        rating = request.form.get("rating", "").strip()
+        memo = request.form.get("memo", "").strip()
 
         if not smoked_date:
-
             flash("吸った日を入力してください。")
+            return redirect(url_for("add"))
 
-            return redirect(
-                url_for("add")
-            )
-
-        gram_detail = build_gram_detail(
-            flavors,
-            grams
-        )
+        gram_detail = build_gram_detail(flavors, grams)
 
         if not gram_detail:
-
-            flash(
-                "フレーバーとグラムを入力してください。"
-            )
-
-            return redirect(
-                url_for("add")
-            )
+            flash("フレーバーとグラムを入力してください。")
+            return redirect(url_for("add"))
 
         save_mix(
             smoked_date=smoked_date,
@@ -362,10 +291,7 @@ def add():
         )
 
         flash("配合履歴を保存しました。")
-
-        return redirect(
-            url_for("index")
-        )
+        return redirect(url_for("index"))
 
     return render_template(
         "add.html",
@@ -377,66 +303,29 @@ def add():
 
 @app.route("/edit/<int:mix_id>", methods=["GET", "POST"])
 def edit(mix_id):
-
     mix = get_mix_by_id(mix_id)
 
     if not mix:
-
-        flash(
-            "対象の履歴が見つかりませんでした。"
-        )
-
-        return redirect(
-            url_for("index")
-        )
+        flash("対象の履歴が見つかりませんでした。")
+        return redirect(url_for("index"))
 
     if request.method == "POST":
-
-        smoked_date = request.form.get(
-            "smoked_date",
-            ""
-        ).strip()
-
+        smoked_date = request.form.get("smoked_date", "").strip()
         flavors = request.form.getlist("flavor[]")
         grams = request.form.getlist("gram[]")
-
-        staff_name = request.form.get(
-            "staff_name",
-            ""
-        ).strip()
-
-        rating = request.form.get(
-            "rating",
-            ""
-        ).strip()
-
-        memo = request.form.get(
-            "memo",
-            ""
-        ).strip()
+        staff_name = request.form.get("staff_name", "").strip()
+        rating = request.form.get("rating", "").strip()
+        memo = request.form.get("memo", "").strip()
 
         if not smoked_date:
-
             flash("吸った日を入力してください。")
+            return redirect(url_for("edit", mix_id=mix_id))
 
-            return redirect(
-                url_for("edit", mix_id=mix_id)
-            )
-
-        gram_detail = build_gram_detail(
-            flavors,
-            grams
-        )
+        gram_detail = build_gram_detail(flavors, grams)
 
         if not gram_detail:
-
-            flash(
-                "フレーバーとグラムを入力してください。"
-            )
-
-            return redirect(
-                url_for("edit", mix_id=mix_id)
-            )
+            flash("フレーバーとグラムを入力してください。")
+            return redirect(url_for("edit", mix_id=mix_id))
 
         update_mix(
             mix_id=mix_id,
@@ -448,19 +337,13 @@ def edit(mix_id):
         )
 
         flash("配合履歴を更新しました。")
-
-        return redirect(
-            url_for("index")
-        )
+        return redirect(url_for("index"))
 
     parsed_items = parse_gram_detail(
-        mix.get("gram_detail")
-        or mix.get("mix_text")
-        or ""
+        mix.get("gram_detail") or mix.get("mix_text") or ""
     )
 
     if not parsed_items:
-
         parsed_items = [{
             "flavor": "",
             "gram": ""
@@ -477,37 +360,16 @@ def edit(mix_id):
 
 @app.route("/search", methods=["GET"])
 def search():
-
-    search_date = request.args.get(
-        "date",
-        ""
-    ).strip()
-
-    search_rating = request.args.get(
-        "rating",
-        ""
-    ).strip()
-
-    search_staff = request.args.get(
-        "staff",
-        ""
-    ).strip()
+    search_date = request.args.get("date", "").strip()
+    search_rating = request.args.get("rating", "").strip()
+    search_staff = request.args.get("staff", "").strip()
 
     mixes = []
-
-    has_search = bool(
-        search_date
-        or search_rating
-        or search_staff
-    )
+    has_search = bool(search_date or search_rating or search_staff)
 
     if has_search:
-
         conn = get_conn()
-
-        cur = conn.cursor(
-            cursor_factory=psycopg2.extras.RealDictCursor
-        )
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         sql = f"""
             SELECT
@@ -526,31 +388,19 @@ def search():
         params = []
 
         if search_date:
-
             sql += " AND smoked_date = %s"
-
             params.append(search_date)
 
         if search_rating:
-
             try:
-
                 sql += " AND rating = %s"
-
-                params.append(
-                    int(search_rating)
-                )
-
+                params.append(int(search_rating))
             except ValueError:
                 pass
 
         if search_staff:
-
             sql += " AND staff_name ILIKE %s"
-
-            params.append(
-                f"%{search_staff}%"
-            )
+            params.append(f"%{search_staff}%")
 
         sql += """
             ORDER BY
@@ -559,7 +409,6 @@ def search():
         """
 
         cur.execute(sql, params)
-
         mixes = cur.fetchall()
 
         cur.close()
@@ -579,33 +428,17 @@ def search():
 
 @app.route("/ranking")
 def ranking():
-
     mixes = get_all_mixes()
-
     flavor_totals = {}
 
     for mix in mixes:
-
-        gram_detail = (
-            mix.get("gram_detail")
-            or mix.get("mix_text")
-            or ""
-        )
-
-        parsed_items = parse_gram_detail(
-            gram_detail
-        )
+        gram_detail = mix.get("gram_detail") or mix.get("mix_text") or ""
+        parsed_items = parse_gram_detail(gram_detail)
 
         for item in parsed_items:
-
             flavor = item["flavor"]
-
             gram = float(item["gram"])
-
-            flavor_totals[flavor] = (
-                flavor_totals.get(flavor, 0)
-                + gram
-            )
+            flavor_totals[flavor] = flavor_totals.get(flavor, 0) + gram
 
     rankings = sorted(
         flavor_totals.items(),
@@ -623,9 +456,7 @@ def ranking():
 
 @app.route("/delete/<int:mix_id>", methods=["POST"])
 def delete(mix_id):
-
     conn = get_conn()
-
     cur = conn.cursor()
 
     cur.execute(
@@ -634,31 +465,21 @@ def delete(mix_id):
     )
 
     conn.commit()
-
     cur.close()
     conn.close()
 
     flash("削除しました。")
-
-    return redirect(
-        url_for("index")
-    )
+    return redirect(url_for("index"))
 
 
 @app.route("/manifest.json")
 def manifest():
-
-    return app.send_static_file(
-        "manifest.json"
-    )
+    return app.send_static_file("manifest.json")
 
 
 @app.route("/sw.js")
 def service_worker():
-
-    return app.send_static_file(
-        "sw.js"
-    )
+    return app.send_static_file("sw.js")
 
 
 init_db()

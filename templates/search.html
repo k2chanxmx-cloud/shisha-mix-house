@@ -22,7 +22,6 @@
     </script>
 
     <style>
-
         body{
             margin:0;
             padding:20px;
@@ -167,7 +166,6 @@
         .active{
             color:#ff5ea8;
         }
-
     </style>
 </head>
 <body>
@@ -238,9 +236,7 @@
                 {{ mix["smoked_date"] }}
             </div>
 
-            <div class="gram-detail">
-                {{ mix["gram_detail"] or mix["mix_text"] }}
-            </div>
+            <div class="gram-detail">{{ mix["gram_detail"] or mix["mix_text"] }}</div>
 
             {% if mix["staff_name"] %}
             <div class="staff">
@@ -260,9 +256,7 @@
             {% endif %}
 
             {% if mix["memo"] %}
-            <div class="memo">
-                {{ mix["memo"] }}
-            </div>
+            <div class="memo">{{ mix["memo"] }}</div>
             {% endif %}
 
         </div>

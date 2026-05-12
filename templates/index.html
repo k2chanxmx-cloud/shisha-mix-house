@@ -22,7 +22,6 @@
     </script>
 
     <style>
-
         body{
             margin:0;
             padding:20px;
@@ -109,6 +108,7 @@
             padding:14px;
             font-weight:bold;
             font-size:15px;
+            width:100%;
         }
 
         .flash{
@@ -148,7 +148,6 @@
         .active{
             color:#ff5ea8;
         }
-
     </style>
 </head>
 <body>
@@ -175,9 +174,7 @@
             {{ mix["smoked_date"] }}
         </div>
 
-        <div class="gram-detail">
-            {{ mix["gram_detail"] or mix["mix_text"] }}
-        </div>
+        <div class="gram-detail">{{ mix["gram_detail"] or mix["mix_text"] }}</div>
 
         {% if mix["staff_name"] %}
         <div class="staff">
@@ -187,22 +184,17 @@
 
         {% if mix["rating"] %}
         <div class="rating">
-
             {% for i in range(mix["rating"]) %}
                 ★
             {% endfor %}
-
             {% for i in range(5 - mix["rating"]) %}
                 ☆
             {% endfor %}
-
         </div>
         {% endif %}
 
         {% if mix["memo"] %}
-        <div class="memo">
-            {{ mix["memo"] }}
-        </div>
+        <div class="memo">{{ mix["memo"] }}</div>
         {% endif %}
 
         <div class="button-row">
