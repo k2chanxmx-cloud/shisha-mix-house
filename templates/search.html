@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>🏠検索🏠</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="manifest" href="/manifest.json">
+
+    <meta name="theme-color" content="#ff9fcf">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="家シーシャ">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js");
+        }
+    </script>
+
+    <style>
+
+        body{
+            margin:0;
+            padding:20px;
+            padding-bottom:120px;
+            background:#ffe6f1;
+            font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+            color:#333;
+        }
+
+        h1{
+            text-align:center;
+            color:#d85b98;
+            margin-bottom:28px;
+            font-size:36px;
+        }
+
+        .card{
+            background:white;
+            border-radius:28px;
+            padding:22px;
+            margin-bottom:22px;
+            box-shadow:0 6px 18px rgba(255,105,180,0.12);
+        }
+
+        label{
+            display:block;
+            margin-bottom:10px;
+            color:#d85b98;
+            font-weight:bold;
+            font-size:18px;
+        }
+
+        input{
+            width:100%;
+            box-sizing:border-box;
+            border:2px solid #ffd2e5;
+            border-radius:18px;
+            padding:16px;
+            font-size:16px;
+            margin-bottom:18px;
+        }
+
+        button{
+            width:100%;
+            background:#ff9fcf;
+            color:white;
+            border:none;
+            border-radius:18px;
+            padding:18px;
+            font-size:20px;
+            font-weight:bold;
+        }
+
+        .clear-button{
+            display:block;
+            text-align:center;
+            margin-top:14px;
+            color:#d85b98;
+            text-decoration:none;
+            font-weight:bold;
+        }
+
+        .search-star-rating{
+            display:flex;
+            gap:8px;
+            margin-bottom:20px;
+        }
+
+        .search-star-rating span{
+            font-size:42px;
+            color:#d8d8d8;
+            cursor:pointer;
+            user-select:none;
+            transition:0.15s;
+        }
+
+        .search-star-rating span.active{
+            color:#ffb400;
+        }
+
+        .date{
+            font-size:18px;
+            font-weight:bold;
+            color:#d85b98;
+            margin-bottom:18px;
+        }
+
+        .gram-detail{
+            white-space:pre-wrap;
+            font-size:18px;
+            line-height:1.9;
+            margin-bottom:24px;
+            word-break:break-word;
+        }
+
+        .staff{
+            color:#777;
+            margin-bottom:14px;
+        }
+
+        .rating{
+            color:#ffb400;
+            font-size:30px;
+            margin-bottom:16px;
+        }
+
+        .memo{
+            background:#fff3f8;
+            padding:16px;
+            border-radius:18px;
+            margin-top:16px;
+            white-space:pre-wrap;
+        }
+
+        .no-result{
+            text-align:center;
+            color:#777;
+            font-weight:bold;
+        }
+
+        .bottom-nav{
+            position:fixed;
+            left:0;
+            right:0;
+            bottom:0;
+            height:82px;
+            background:rgba(255,255,255,0.96);
+            backdrop-filter:blur(12px);
+            display:flex;
+            justify-content:space-around;
+            align-items:center;
+            border-top:1px solid #ffd2e5;
+        }
+
+        .nav-item{
+            text-decoration:none;
+            color:#cc7fa3;
+            font-weight:bold;
+            font-size:14px;
+        }
+
+        .active{
+            color:#ff5ea8;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>🏠検索🏠</h1>
+
+<div class="card">
+
+    <form action="/search" method="GET">
+
+        <label>日付</label>
+
+        <input
+            type="date"
+            name="date"
+            value="{{ search_date }}"
+        >
+
+        <label>評価</label>
+
+        <input
+            type="hidden"
+            name="rating"
+            id="search-rating-value"
+            value="{{ search_rating }}"
+        >
+
+        <div class="search-star-rating">
+
+            <span onclick="setSearchRating(1)">☆</span>
+            <span onclick="setSearchRating(2)">☆</span>
+            <span onclick="setSearchRating(3)">☆</span>
+            <span onclick="setSearchRating(4)">☆</span>
+            <span onclick="setSearchRating(5)">☆</span>
+
+        </div>
+
+        <label>作った人</label>
+
+        <input
+            type="text"
+            name="staff"
+            placeholder="例：まき"
+            value="{{ search_staff }}"
+        >
+
+        <button type="submit">
+            検索する
+        </button>
+
+        <a href="/search" class="clear-button">
+            条件クリア
+        </a>
+
+    </form>
+
+</div>
+
+{% if has_search %}
+
+    {% if mixes %}
+
+        {% for mix in mixes %}
+
+        <div class="card">
+
+            <div class="date">
+                {{ mix["smoked_date"] }}
+            </div>
+
+            <div class="gram-detail">
+                {{ mix["gram_detail"] or mix["mix_text"] }}
+            </div>
+
+            {% if mix["staff_name"] %}
+            <div class="staff">
+                作った人：{{ mix["staff_name"] }}
+            </div>
+            {% endif %}
+
+            {% if mix["rating"] %}
+            <div class="rating">
+                {% for i in range(mix["rating"]) %}
+                    ★
+                {% endfor %}
+                {% for i in range(5 - mix["rating"]) %}
+                    ☆
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if mix["memo"] %}
+            <div class="memo">
+                {{ mix["memo"] }}
+            </div>
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="card no-result">
+            条件に合う配合はありませんでした
+        </div>
+
+    {% endif %}
+
+{% endif %}
+
+<nav class="bottom-nav">
+    <a href="/" class="nav-item">履歴</a>
+    <a href="/add" class="nav-item">登録</a>
+    <a href="/search" class="nav-item active">検索</a>
+    <a href="/ranking" class="nav-item">ランキング</a>
+</nav>
+
+<script>
+
+function setSearchRating(rating){
+
+    const currentValue = document.getElementById("search-rating-value").value;
+
+    if(currentValue == rating){
+        rating = "";
+    }
+
+    document.getElementById("search-rating-value").value = rating;
+
+    updateSearchStars(rating);
+
+}
+
+function updateSearchStars(rating){
+
+    const stars = document.querySelectorAll(".search-star-rating span");
+
+    stars.forEach((star, index) => {
+
+        if(index < rating){
+            star.classList.add("active");
+            star.textContent = "★";
+        }else{
+            star.classList.remove("active");
+            star.textContent = "☆";
+        }
+
+    });
+
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+    const rating = document.getElementById("search-rating-value").value;
+    updateSearchStars(rating);
+});
+
+</script>
+
+</body>
+</html>

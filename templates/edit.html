@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>🏠編集🏠</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="manifest" href="/manifest.json">
+
+    <meta name="theme-color" content="#ff9fcf">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="家シーシャ">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js");
+        }
+    </script>
+
+    <style>
+
+        body{
+            margin:0;
+            padding:20px;
+            padding-bottom:120px;
+            background:#ffe6f1;
+            font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+            color:#333;
+        }
+
+        h1{
+            text-align:center;
+            color:#d85b98;
+            margin-bottom:28px;
+            font-size:36px;
+        }
+
+        .card{
+            background:white;
+            border-radius:28px;
+            padding:22px;
+            margin-bottom:22px;
+            box-shadow:0 6px 18px rgba(255,105,180,0.12);
+        }
+
+        label{
+            display:block;
+            margin-bottom:10px;
+            color:#d85b98;
+            font-weight:bold;
+            font-size:18px;
+        }
+
+        input,
+        textarea{
+            width:100%;
+            box-sizing:border-box;
+            border:2px solid #ffd2e5;
+            border-radius:18px;
+            padding:16px;
+            font-size:16px;
+        }
+
+        textarea{
+            min-height:120px;
+            resize:vertical;
+        }
+
+        .mix-row{
+            display:flex;
+            gap:10px;
+            margin-bottom:14px;
+            align-items:center;
+        }
+
+        .flavor-input{
+            flex:1;
+        }
+
+        .gram-input{
+            width:90px;
+        }
+
+        .gram-label{
+            font-weight:bold;
+            color:#d85b98;
+        }
+
+        .add-row-button{
+            width:100%;
+            background:#ffd2e5;
+            color:#d85b98;
+            border:none;
+            border-radius:18px;
+            padding:14px;
+            font-size:16px;
+            font-weight:bold;
+            margin-top:10px;
+            margin-bottom:24px;
+        }
+
+        .save-button{
+            width:100%;
+            background:#ff9fcf;
+            color:white;
+            border:none;
+            border-radius:18px;
+            padding:18px;
+            font-size:20px;
+            font-weight:bold;
+            margin-top:20px;
+        }
+
+        .star-rating{
+            display:flex;
+            gap:8px;
+            margin-bottom:20px;
+        }
+
+        .star-rating span{
+            font-size:42px;
+            color:#d8d8d8;
+            cursor:pointer;
+            user-select:none;
+            transition:0.15s;
+        }
+
+        .star-rating span.active{
+            color:#ffb400;
+        }
+
+        .bottom-nav{
+            position:fixed;
+            left:0;
+            right:0;
+            bottom:0;
+            height:82px;
+            background:rgba(255,255,255,0.96);
+            backdrop-filter:blur(12px);
+            display:flex;
+            justify-content:space-around;
+            align-items:center;
+            border-top:1px solid #ffd2e5;
+        }
+
+        .nav-item{
+            text-decoration:none;
+            color:#cc7fa3;
+            font-weight:bold;
+            font-size:14px;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>🏠配合編集🏠</h1>
+
+<div class="card">
+
+    <form method="POST">
+
+        <label>吸った日</label>
+
+        <input
+            type="date"
+            name="smoked_date"
+            value="{{ mix['smoked_date'] }}"
+            required
+            style="margin-bottom:24px;"
+        >
+
+        <label>配合</label>
+
+        <div id="mix-container">
+
+            {% for item in parsed_items %}
+
+            <div class="mix-row">
+
+                <input
+                    type="text"
+                    name="flavor[]"
+                    class="flavor-input"
+                    placeholder="フレーバー"
+                    value="{{ item['flavor'] }}"
+                >
+
+                <input
+                    type="number"
+                    step="0.1"
+                    name="gram[]"
+                    class="gram-input"
+                    placeholder="g"
+                    value="{{ item['gram'] }}"
+                >
+
+                <div class="gram-label">
+                    g
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <button
+            type="button"
+            class="add-row-button"
+            onclick="addMixRow()"
+        >
+            ＋ 配合を追加
+        </button>
+
+        <label>作った人</label>
+
+        <input
+            type="text"
+            name="staff_name"
+            placeholder="例：まき"
+            value="{{ mix['staff_name'] or '' }}"
+            style="margin-bottom:24px;"
+        >
+
+        <label>評価</label>
+
+        <input
+            type="hidden"
+            name="rating"
+            id="rating-value"
+            value="{{ mix['rating'] or 0 }}"
+        >
+
+        <div class="star-rating">
+
+            <span onclick="setRating(1)">☆</span>
+            <span onclick="setRating(2)">☆</span>
+            <span onclick="setRating(3)">☆</span>
+            <span onclick="setRating(4)">☆</span>
+            <span onclick="setRating(5)">☆</span>
+
+        </div>
+
+        <label>メモ</label>
+
+        <textarea
+            name="memo"
+            placeholder="感想など"
+        >{{ mix['memo'] or '' }}</textarea>
+
+        <button type="submit" class="save-button">
+            更新する
+        </button>
+
+    </form>
+
+</div>
+
+<nav class="bottom-nav">
+    <a href="/" class="nav-item">履歴</a>
+    <a href="/add" class="nav-item">登録</a>
+    <a href="/search" class="nav-item">検索</a>
+    <a href="/ranking" class="nav-item">ランキング</a>
+</nav>
+
+<script>
+
+function addMixRow(){
+
+    const container = document.getElementById("mix-container");
+
+    const row = document.createElement("div");
+
+    row.className = "mix-row";
+
+    row.innerHTML = `
+        <input
+            type="text"
+            name="flavor[]"
+            class="flavor-input"
+            placeholder="フレーバー"
+        >
+
+        <input
+            type="number"
+            step="0.1"
+            name="gram[]"
+            class="gram-input"
+            placeholder="g"
+        >
+
+        <div class="gram-label">
+            g
+        </div>
+    `;
+
+    container.appendChild(row);
+
+}
+
+function setRating(rating){
+
+    document.getElementById("rating-value").value = rating;
+
+    const stars = document.querySelectorAll(".star-rating span");
+
+    stars.forEach((star, index) => {
+
+        if(index < rating){
+            star.classList.add("active");
+            star.textContent = "★";
+        }else{
+            star.classList.remove("active");
+            star.textContent = "☆";
+        }
+
+    });
+
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const currentRating =
+        parseInt(document.getElementById("rating-value").value || 0);
+
+    setRating(currentRating);
+
+});
+
+</script>
+
+</body>
+</html>

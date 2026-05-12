@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ app_name }}</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="manifest" href="/manifest.json">
+
+    <meta name="theme-color" content="#ff9fcf">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="家シーシャ">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js");
+        }
+    </script>
+
+    <style>
+
+        body{
+            margin:0;
+            padding:20px;
+            padding-bottom:120px;
+            background:#ffe6f1;
+            font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+            color:#333;
+        }
+
+        h1{
+            text-align:center;
+            color:#d85b98;
+            margin-bottom:25px;
+            font-size:36px;
+        }
+
+        .card{
+            background:white;
+            border-radius:28px;
+            padding:22px;
+            margin-bottom:22px;
+            box-shadow:0 6px 18px rgba(255,105,180,0.12);
+        }
+
+        .date{
+            font-size:18px;
+            font-weight:bold;
+            color:#d85b98;
+            margin-bottom:18px;
+        }
+
+        .gram-detail{
+            white-space:pre-wrap;
+            font-size:18px;
+            line-height:1.9;
+            margin-bottom:24px;
+            word-break:break-word;
+        }
+
+        .staff{
+            color:#777;
+            margin-bottom:14px;
+        }
+
+        .rating{
+            color:#ffb400;
+            font-size:30px;
+            margin-bottom:18px;
+        }
+
+        .memo{
+            background:#fff3f8;
+            padding:16px;
+            border-radius:18px;
+            margin-top:16px;
+            white-space:pre-wrap;
+        }
+
+        .button-row{
+            display:flex;
+            gap:10px;
+            margin-top:18px;
+        }
+
+        .edit-button{
+            flex:1;
+            background:#ff9fcf;
+            color:white;
+            border:none;
+            border-radius:16px;
+            padding:14px;
+            text-align:center;
+            text-decoration:none;
+            font-weight:bold;
+            font-size:15px;
+        }
+
+        .delete-button{
+            flex:1;
+            background:#ff7a9e;
+            color:white;
+            border:none;
+            border-radius:16px;
+            padding:14px;
+            font-weight:bold;
+            font-size:15px;
+        }
+
+        .flash{
+            background:white;
+            border-radius:20px;
+            padding:18px;
+            margin-bottom:20px;
+        }
+
+        .empty{
+            text-align:center;
+            color:#777;
+            font-weight:bold;
+        }
+
+        .bottom-nav{
+            position:fixed;
+            left:0;
+            right:0;
+            bottom:0;
+            height:82px;
+            background:rgba(255,255,255,0.96);
+            backdrop-filter:blur(12px);
+            display:flex;
+            justify-content:space-around;
+            align-items:center;
+            border-top:1px solid #ffd2e5;
+        }
+
+        .nav-item{
+            text-decoration:none;
+            color:#cc7fa3;
+            font-weight:bold;
+            font-size:14px;
+        }
+
+        .active{
+            color:#ff5ea8;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>🏠配合履歴🏠</h1>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="flash">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+{% if mixes %}
+
+    {% for mix in mixes %}
+
+    <div class="card">
+
+        <div class="date">
+            {{ mix["smoked_date"] }}
+        </div>
+
+        <div class="gram-detail">
+            {{ mix["gram_detail"] or mix["mix_text"] }}
+        </div>
+
+        {% if mix["staff_name"] %}
+        <div class="staff">
+            作った人：{{ mix["staff_name"] }}
+        </div>
+        {% endif %}
+
+        {% if mix["rating"] %}
+        <div class="rating">
+
+            {% for i in range(mix["rating"]) %}
+                ★
+            {% endfor %}
+
+            {% for i in range(5 - mix["rating"]) %}
+                ☆
+            {% endfor %}
+
+        </div>
+        {% endif %}
+
+        {% if mix["memo"] %}
+        <div class="memo">
+            {{ mix["memo"] }}
+        </div>
+        {% endif %}
+
+        <div class="button-row">
+
+            <a
+                href="/edit/{{ mix['id'] }}"
+                class="edit-button"
+            >
+                編集
+            </a>
+
+            <form
+                action="/delete/{{ mix['id'] }}"
+                method="POST"
+                style="flex:1;"
+            >
+                <button class="delete-button">
+                    削除
+                </button>
+            </form>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+{% else %}
+
+    <div class="card empty">
+        まだ配合履歴がありません
+    </div>
+
+{% endif %}
+
+<nav class="bottom-nav">
+    <a href="/" class="nav-item active">履歴</a>
+    <a href="/add" class="nav-item">登録</a>
+    <a href="/search" class="nav-item">検索</a>
+    <a href="/ranking" class="nav-item">ランキング</a>
+</nav>
+
+</body>
+</html>

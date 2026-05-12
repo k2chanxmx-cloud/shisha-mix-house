@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>🏠ランキング🏠</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="manifest" href="/manifest.json">
+
+    <meta name="theme-color" content="#ff9fcf">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="家シーシャ">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js");
+        }
+    </script>
+
+    <style>
+
+        body{
+            margin:0;
+            padding:20px;
+            padding-bottom:120px;
+            background:#ffe6f1;
+            font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+            color:#333;
+        }
+
+        h1{
+            text-align:center;
+            color:#d85b98;
+            margin-bottom:28px;
+            font-size:34px;
+        }
+
+        .note{
+            background:#fff3f8;
+            border-radius:22px;
+            padding:16px;
+            margin-bottom:22px;
+            color:#d85b98;
+            font-weight:bold;
+            line-height:1.7;
+            box-shadow:0 6px 18px rgba(255,105,180,0.08);
+        }
+
+        .card{
+            background:white;
+            border-radius:28px;
+            padding:22px;
+            margin-bottom:18px;
+            box-shadow:0 6px 18px rgba(255,105,180,0.12);
+        }
+
+        .rank-row{
+            display:flex;
+            align-items:center;
+            gap:14px;
+        }
+
+        .rank-number{
+            width:46px;
+            height:46px;
+            border-radius:50%;
+            background:#ff9fcf;
+            color:white;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:bold;
+            font-size:18px;
+            flex-shrink:0;
+        }
+
+        .rank-number.top1{
+            background:#ff5ea8;
+        }
+
+        .rank-number.top2{
+            background:#ff82bb;
+        }
+
+        .rank-number.top3{
+            background:#ffa6d0;
+        }
+
+        .rank-info{
+            flex:1;
+        }
+
+        .flavor-name{
+            font-size:20px;
+            font-weight:bold;
+            color:#333;
+            margin-bottom:6px;
+        }
+
+        .gram-total{
+            color:#d85b98;
+            font-weight:bold;
+            font-size:18px;
+        }
+
+        .empty{
+            text-align:center;
+            color:#777;
+            font-weight:bold;
+            line-height:1.8;
+        }
+
+        .bottom-nav{
+            position:fixed;
+            left:0;
+            right:0;
+            bottom:0;
+            height:82px;
+            background:rgba(255,255,255,0.96);
+            backdrop-filter:blur(12px);
+            display:flex;
+            justify-content:space-around;
+            align-items:center;
+            border-top:1px solid #ffd2e5;
+        }
+
+        .nav-item{
+            text-decoration:none;
+            color:#cc7fa3;
+            font-weight:bold;
+            font-size:14px;
+        }
+
+        .active{
+            color:#ff5ea8;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>🏠フレーバーランキング🏠</h1>
+
+<div class="note">
+    登録したグラム数をもとに、よく使うフレーバーを集計しています。
+</div>
+
+{% if rankings %}
+
+    {% for flavor, gram in rankings %}
+
+    <div class="card">
+
+        <div class="rank-row">
+
+            <div class="rank-number {% if loop.index == 1 %}top1{% elif loop.index == 2 %}top2{% elif loop.index == 3 %}top3{% endif %}">
+                {{ loop.index }}
+            </div>
+
+            <div class="rank-info">
+
+                <div class="flavor-name">
+                    {{ flavor }}
+                </div>
+
+                <div class="gram-total">
+                    合計 {{ gram }}g
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+{% else %}
+
+    <div class="card empty">
+        まだランキングに表示できるデータがありません。<br>
+        配合を登録するとここに表示されます。
+    </div>
+
+{% endif %}
+
+<nav class="bottom-nav">
+    <a href="/" class="nav-item">履歴</a>
+    <a href="/add" class="nav-item">登録</a>
+    <a href="/search" class="nav-item">検索</a>
+    <a href="/ranking" class="nav-item active">ランキング</a>
+</nav>
+
+</body>
+</html>
